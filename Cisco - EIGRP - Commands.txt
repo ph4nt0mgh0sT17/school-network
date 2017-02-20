@@ -1,0 +1,42 @@
+1) Navázání sousedství v EIGRP (nutno nejdríve nahodit interface):
+R(config)# interface s0/1/0 
+R(config-if)# ip address adresa routeru maska síte
+R(config-if)# clock-rate 128000
+R(config-if)# no shutdown
+
+To samé zopakovat na druhém routeru (pochopitelne zamenit interface a ip address a clock-rate už tam nebude)
+
+Ted dokoncíme navázání EIGRP sousedství, tím že nakonfigurujeme zákl. EIGRP:
+R(config)# router eigrp 1 (císlo 1 znací císlo EIGRP, toto císlo musí mít všechny routery v sítí -> routery musí používát stejný EIGRP
+R(config-router)# no auto-summary
+R(config-router)# network adresa síte maska síte (maska síte bude naopak -> 255.255.255.0 = 0.0.0.255)
+
+
+
+2) Zmena hodnoty bandwidth na 1 Mbit mezi routery...
+R(config)# interface s0/0/0
+R(config-if)# bandwidth 1024
+R(config-if)# no shutdown
+
+To samé provedete na druhém routeru
+
+3) Zmena hodnoty hold-time na 5ti násobek na routeru na nejakém interfacu
+R(config)# interface s0/0/0
+R(config-if)# ip hold-time eigrp1 30
+
+4) Propagujte manuálne sumarizovanou sít 192.168.128.0 /25, propagovat v rámci EIGRP (aby jsme to nemeli lehkéééé)
+R(config)# interface s0/0/0
+R(config-if)# ip summary-address eigrp 1 192.168.128.0 255.255.255.128
+
+to samé provedeme na další interface (posíláme o téhle ceste informace na všechny cesty z daného routeru)
+
+5) Nakonfigurujte a propagujte statickou cestu k R_ISP (Internet Service Provider)
+R(config)# ip route 0.0.0.0 0.0.0.0 exit-interface k routeru
+R(config)# router eigrp 1
+R(config-router)# redistribute static
+
+6) Napište príkaz pomocí kterého zjistíme delay na interface s0/0/1 
+R(config)# show interface s0/0/1
+
+7) Napište príkaz, kterým zjistíme, které parametry síte se aktuálne používají pro výpocet metriky na routeru
+R(config)# show ip protocol
